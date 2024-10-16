@@ -4,6 +4,7 @@ import com.itbk.Outlet_Store.domain.Category;
 import com.itbk.Outlet_Store.domain.PageResult;
 import com.itbk.Outlet_Store.domain.Product;
 import com.itbk.Outlet_Store.domain.TypeProduct;
+import com.itbk.Outlet_Store.repository.CategoryRepository;
 import com.itbk.Outlet_Store.repository.ProductRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,11 +23,14 @@ public class ProductService {
   private final ProductRepository productRepository;
   private  final CategoryService categoryService;
   private  final ImageService imageService;
+  private final CategoryRepository categoryRepository;
 
-  public ProductService(ProductRepository productRepository,CategoryService categoryService,ImageService imageService) {
+  public ProductService(ProductRepository productRepository,CategoryService categoryService,
+                        ImageService imageService,CategoryRepository categoryRepository) {
     this.productRepository = productRepository;
     this.categoryService = categoryService;
     this.imageService = imageService;
+    this.categoryRepository =categoryRepository;
   }
 
   public List<Product> getALlProduct(){
@@ -48,20 +53,13 @@ public class ProductService {
 
     String generatedFileName = imageService.storageFile(file);
 
-    Product currentProduct = new Product();
-
     Category categoryName = this.categoryService.getCategoryByName(product.getCategory().getName());
-    currentProduct.setDescription(product.getDescription());
-    currentProduct.setDiscount(product.getDiscount());
-    currentProduct.setEnteredDate(product.getEnteredDate());
-    currentProduct.setImage(generatedFileName);
-    currentProduct.setName(product.getName());
-    currentProduct.setQuantity(product.getQuantity());
-    currentProduct.setUnitPrice(product.getUnitPrice());
-    currentProduct.setXuatXu(product.getXuatXu());
-    currentProduct.setCategory(categoryName);
 
-    return this.productRepository.save(currentProduct);
+    product.setImage(generatedFileName);
+    product.setCategory(categoryName);
+    product.setEnteredDate(new Date());
+
+    return this.productRepository.save(product);
 
   }
 
@@ -78,24 +76,15 @@ public class ProductService {
   }
 
 
-  public Product updateProduct(Product product ,MultipartFile file,Long id){
+  public Product updateProduct(Product product ,MultipartFile file,long categoryId){
 
     String generatedFileName = imageService.storageFile(file);
-
-    Product currentProduct = getProductById(id);
-
-    Category categoryName = this.categoryService.getCategoryByName(product.getCategory().getName());
-    currentProduct.setDescription(product.getDescription());
-    currentProduct.setDiscount(product.getDiscount());
-    currentProduct.setEnteredDate(product.getEnteredDate());
-    currentProduct.setImage(generatedFileName);
-    currentProduct.setName(product.getName());
-    currentProduct.setQuantity(product.getQuantity());
-    currentProduct.setUnitPrice(product.getUnitPrice());
-    currentProduct.setXuatXu(product.getXuatXu());
-    currentProduct.setCategory(categoryName);
-
-    return this.productRepository.save(currentProduct);
+    Category category = this.categoryRepository.findById(categoryId)
+            .orElseThrow(() -> new RuntimeException("Category not found"));
+    product.setCategory(category);
+    product.setImage(generatedFileName);
+    product.setEnteredDate(new Date());
+    return this.productRepository.save(product);
 
   }
 
@@ -107,6 +96,8 @@ public class ProductService {
     }
     return false;
   }
+
+
 
   public PageResult<Product> getProductsByTypeProduct(TypeProduct typeProduct, int page, int size) {
 

@@ -24,7 +24,7 @@ import java.util.stream.Stream;
 @Service
 public class ImageService {
 
-  private final Path storageFolder = Paths.get("Outlet_Store", "uploads");
+  private final Path storageFolder = Paths.get("uploads");
 
   public ImageService() {
     try {
