@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin(origins = "*")
 @RestController
-@CrossOrigin("*")
 @RequestMapping("home/cart")
 public class CartController {
 
@@ -27,22 +27,22 @@ public class CartController {
 
   @GetMapping("/totalPrice")
   public Integer getTotalPrice() {
-    return cartItemService.getTotalPrice();
+    return this.cartItemService.getTotalPrice();
   }
 
   @GetMapping("/list")
   public List<CartItem> getAllProducts() {
-    return cartItemService.getAllCartItem();
+    return this.cartItemService.getAllCartItem();
   }
 
   @GetMapping("/count")
   public int count() {
-    return cartItemService.getCount();
+    return this.cartItemService.getCount();
   }
 
   @DeleteMapping("/delete-all")
   public String deleteAll() {
-    cartItemService.deleteAllCartItem();
+    this.cartItemService.deleteAllCartItem();
     return "Deleted all cart items";
   }
 
@@ -52,9 +52,9 @@ public class CartController {
       return   ResponseEntity.status(HttpStatus.OK).body(new ResponseObject("OK", "thêm vào giở hàng thành công", newCartItem));
   }
 
-  @PutMapping("/update")
-  public ResponseEntity<ResponseObject> updateFromCart(@RequestBody CartItem cartItem){
-    CartItem updateCartItem = this.cartItemService.updateToCart(cartItem);
+  @PutMapping("/update/{id}")
+  public ResponseEntity<ResponseObject> updateFromCart(@RequestBody CartItem cartItem, @PathVariable long id){
+    CartItem updateCartItem = this.cartItemService.updateToCart(cartItem,id);
     return   ResponseEntity.status(HttpStatus.OK).body(new ResponseObject("OK", "cập nhật giở hàng thành công", updateCartItem));
   }
 

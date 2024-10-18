@@ -6,12 +6,11 @@ import com.itbk.Outlet_Store.domain.PageResult;
 import com.itbk.Outlet_Store.repository.OrderDetailRepository;
 import com.itbk.Outlet_Store.service.OrderService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin("*")
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("admin/order")
 public class OrderController {

@@ -49,17 +49,23 @@ public class ProductService {
     this.productRepository.deleteById(id);
   }
 
-  public Product createProduct(Product product ,MultipartFile file){
+  public Product createProduct(Product product ,MultipartFile file,long categoryId){
+    String generatedFileName = this.imageService.storageFile(file);
 
-    String generatedFileName = imageService.storageFile(file);
+    Category category = this.categoryService.getCategoryById(categoryId);
 
-    Category categoryName = this.categoryService.getCategoryByName(product.getCategory().getName());
+    Product newProduct = new Product();
+    newProduct.setName(product.getName());
+    newProduct.setQuantity(product.getQuantity());
+    newProduct.setUnitPrice(product.getUnitPrice());
+    newProduct.setDescription(product.getDescription());
+    newProduct.setDiscount(product.getDiscount());
+    newProduct.setXuatXu(product.getXuatXu());
+    newProduct.setImage(generatedFileName);
+    newProduct.setCategory(category);
+    newProduct.setEnteredDate(new Date());
 
-    product.setImage(generatedFileName);
-    product.setCategory(categoryName);
-    product.setEnteredDate(new Date());
-
-    return this.productRepository.save(product);
+    return this.productRepository.save(newProduct);
 
   }
 
@@ -76,17 +82,47 @@ public class ProductService {
   }
 
 
-  public Product updateProduct(Product product ,MultipartFile file,long categoryId){
 
-    String generatedFileName = imageService.storageFile(file);
+
+  public Product updateProduct(Product product, MultipartFile file, long categoryId, long id) {
+    String generatedFileName = null;
+    if (file != null && !file.isEmpty()) {
+      generatedFileName = imageService.storageFile(file);
+    }
+
     Category category = this.categoryRepository.findById(categoryId)
             .orElseThrow(() -> new RuntimeException("Category not found"));
-    product.setCategory(category);
-    product.setImage(generatedFileName);
-    product.setEnteredDate(new Date());
-    return this.productRepository.save(product);
 
+    Product updateProduct = getProductById(id);
+
+    if (product.getName() != null && !product.getName().isEmpty()) {
+      updateProduct.setName(product.getName());
+    }
+    if (product.getDescription() != null && !product.getDescription().isEmpty()) {
+      updateProduct.setDescription(product.getDescription());
+    }
+    if (product.getXuatXu() != null && !product.getXuatXu().isEmpty()) {
+      updateProduct.setXuatXu(product.getXuatXu());
+    }
+
+    if (product.getQuantity() > 0) {
+      updateProduct.setQuantity(product.getQuantity());
+    }
+    if (product.getUnitPrice() > 0) {
+      updateProduct.setUnitPrice(product.getUnitPrice());
+    }
+    if (product.getDiscount() >= 0) {
+      updateProduct.setDiscount(product.getDiscount());
+    }
+
+    if (generatedFileName != null) {
+      updateProduct.setImage(generatedFileName);
+    }
+    updateProduct.setCategory(category);
+    updateProduct.setEnteredDate(new Date());
+    return this.productRepository.save(updateProduct);
   }
+
 
   public boolean deleteProduct(long id){
     Product currentProduct = getProductById(id);

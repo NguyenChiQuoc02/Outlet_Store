@@ -88,24 +88,38 @@ public class CartItemService {
       }
       return  null;
   }
-  public CartItem updateToCart(CartItem cartItem){
-    Optional<Product> optionalProduct = productRepository.findById(cartItem.getCartItem().getProductId());
-    CartItem existingItem = getCartItemById(cartItem.getId());
-    if (optionalProduct.isPresent()) {
-      Product product = optionalProduct.get();
-      List<CartItem> existingItems = cartItemRepository.findByCartItemAndSizeAndColor(product, cartItem.getSize(), cartItem.getSize());
-      if (!existingItems.isEmpty()) {
-        existingItem = existingItems.get(0);
-        existingItem.setQuantity(cartItem.getQuantity());
-        existingItem.setColor(cartItem.getColor());
-        existingItem.setSize(cartItem.getSize());
-        cartItemRepository.save(existingItem);
-      }
-      return existingItem;
-    } else {
-      return null;
+  public CartItem updateToCart(CartItem cartItem, long id) {
+    Optional<Product> optionalProduct = productRepository.findById(id);
+
+    if (optionalProduct.isEmpty()) {
+      throw new RuntimeException("Product with ID " + id + " not found");
     }
+
+    Product product = optionalProduct.get();
+    List<CartItem> existingItems = cartItemRepository.findByCartItemAndSizeAndColor(
+            product, cartItem.getSize(), cartItem.getColor());
+
+    CartItem existingItem;
+    if (!existingItems.isEmpty()) {
+      // Nếu đã có sản phẩm cùng size và color trong giỏ hàng, thì cập nhật
+      existingItem = existingItems.get(0);
+      existingItem.setQuantity(cartItem.getQuantity());
+      existingItem.setColor(cartItem.getColor());
+      existingItem.setSize(cartItem.getSize());
+      this.cartItemRepository.save(existingItem);
+    } else {
+      // Nếu chưa có, tạo mới một CartItem
+      existingItem = new CartItem();
+//      existingItem.setCartItem(cartItem.setId(id));
+      existingItem.setQuantity(cartItem.getQuantity());
+      existingItem.setColor(cartItem.getColor());
+      existingItem.setSize(cartItem.getSize());
+//      this.cartItemRepository.save(existingItem);
+    }
+
+    return existingItem;
   }
+
 
   public void deleteFromCart(CartItem cartItem){
     Optional<Product> optionalProduct = productRepository.findById(cartItem.getCartItem().getProductId());

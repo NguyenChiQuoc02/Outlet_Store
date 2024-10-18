@@ -6,6 +6,7 @@ import com.itbk.Outlet_Store.domain.ResponseObject;
 import com.itbk.Outlet_Store.service.ProductService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
@@ -21,12 +22,12 @@ public class ProductController {
     this.productService = productService;
   }
 
-  @GetMapping("/listPage")
-  public ResponseEntity<ResponseObject> getProducts(@RequestParam(defaultValue = "0") int page,
-                                                         @RequestParam(defaultValue = "5") int size,
+  @GetMapping("")
+  public ResponseEntity<PageResult<Product>> getProducts(@RequestParam(value ="page",defaultValue = "0") int page,
+                                                         @RequestParam(value = "size" ,defaultValue = "5") int size,
                                                          @RequestParam(value = "keyword", required = false) String keyword) {
     PageResult<Product> products = this.productService.getPageProducts(page, size, keyword);
-    return ResponseEntity.status(HttpStatus.OK).body(new ResponseObject("ok","Danh sach san pham theo trang",products ));
+    return ResponseEntity.ok(products);
   }
 
   @GetMapping("/list")
@@ -41,60 +42,19 @@ public class ProductController {
     return ResponseEntity.status(HttpStatus.OK).body(new ResponseObject("ok", "lấy thành công", product));
   }
 
-  @PostMapping("/add")
+  @PostMapping("")
   public ResponseEntity<ResponseObject> createProduct(
-          @RequestParam("file") MultipartFile file,
-          @RequestParam("name") String name, @RequestParam("quantity") int quantity,
-          @RequestParam("unitPrice") int unitPrice, @RequestParam("description") String description,
-          @RequestParam("discount") int discount, @RequestParam("xuatXu") String xuatXu,
-          @RequestParam("categoryId") Long categoryId) {
-    Product product = new Product();
-    product.setName(name);
-    product.setQuantity(quantity);
-    product.setUnitPrice(unitPrice);
-    product.setDescription(description);
-    product.setDiscount(discount);
-    product.setXuatXu(xuatXu);
-
-    Product savedProduct = this.productService.createProduct(product ,file );
+          @RequestParam("file") MultipartFile file,@ModelAttribute  Product product ,long categoryId) {
+    Product savedProduct = this.productService.createProduct(product ,file ,categoryId);
     return ResponseEntity.status(HttpStatus.OK).body(new ResponseObject("ok", "thêm thành công", savedProduct));
   }
 
   @PutMapping("/update/{id}")
   public ResponseEntity<ResponseObject> updateProduct(@PathVariable("id") Long id,
                                                       @RequestParam(name = "file", required = false) MultipartFile file,
-                                                      @RequestParam(name = "name", required = false) String name,
-                                                      @RequestParam(name = "quantity", required = false) Integer quantity,
-                                                      @RequestParam(name = "unitPrice", required = false) Integer unitPrice,
-                                                      @RequestParam(name = "description", required = false) String description,
-                                                      @RequestParam(name = "discount", required = false) Integer discount,
-                                                      @RequestParam(name = "xuatXu", required = false) String xuatXu,
+                                                      @ModelAttribute Product product,
                                                       @RequestParam(name = "categoryId", required = false) Long categoryId){
-    Product product = this.productService.getProductById(id);
-    if (name != null) {
-      product.setName(name);
-    }
-
-    if (quantity != null) {
-      product.setQuantity(quantity);
-    }
-
-    if (unitPrice != null) {
-      product.setUnitPrice(unitPrice);
-    }
-
-    if (description != null) {
-      product.setDescription(description);
-    }
-
-    if (discount != null) {
-      product.setDiscount(discount);
-    }
-
-    if (xuatXu != null) {
-      product.setXuatXu(xuatXu);
-    }
-    Product savedProduct = this.productService.updateProduct(product ,file, categoryId);
+    Product savedProduct = this.productService.updateProduct(product ,file, categoryId ,id);
     return ResponseEntity.status(HttpStatus.OK).body(new ResponseObject("ok", "cập nhật thành công", savedProduct));
   }
 

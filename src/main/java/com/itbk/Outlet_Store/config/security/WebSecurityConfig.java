@@ -63,7 +63,7 @@ public class WebSecurityConfig {
     http.csrf(csrf -> csrf.disable())
             .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
 
-            .authorizeHttpRequests(auth ->  auth.requestMatchers("/admin/**").permitAll()
+            .authorizeHttpRequests(auth ->  auth.requestMatchers("/admin/**").hasAnyRole("ADMIN")
                     .requestMatchers("/home/**", "/display/**", "/api/auth/**").permitAll()
                     .anyRequest().authenticated());
     http.authenticationProvider(authenticationProvider());

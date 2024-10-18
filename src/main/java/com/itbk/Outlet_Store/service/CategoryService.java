@@ -8,6 +8,7 @@ import com.itbk.Outlet_Store.repository.TypeProductRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -60,11 +61,34 @@ public class CategoryService {
   public Category createCategory( Category addCategory){
       Category category = new Category();
       category.setName(addCategory.getName());
-      TypeProduct typeProduct = this.typeProductRepository.findById(addCategory.getCategoryId())
+      TypeProduct typeProduct = this.typeProductRepository.findById(addCategory.getIdTypeProduct().getId())
               .orElseThrow(() -> new RuntimeException("TypeProduct not found"));
       category.setIdTypeProduct(typeProduct);
       Category savedCategory = categoryRepository.save(category);
       return savedCategory;
+  }
+
+  public Category updateCategory(long id, String name, long idTypeProduct){
+    Category existingCategory = categoryRepository.findById(id).orElse(null);
+    if (existingCategory == null) {
+      return null;
+    }
+    existingCategory.setName(name);
+    TypeProduct typeProduct = this.typeProductRepository.findById(idTypeProduct)
+            .orElseThrow(() -> new RuntimeException("TypeProduct not found"));
+    existingCategory.setIdTypeProduct(typeProduct);
+    Category updatedCategory = categoryRepository.save(existingCategory);
+    return existingCategory;
+  }
+
+  public boolean deleteCategory(long id){
+    Optional<Category> opt = categoryRepository.findById(id);
+    if (opt.isPresent()) {
+      Category category = opt.get();
+      categoryRepository.delete(category);
+      return  true;
+    }
+    return false;
   }
 
 }
